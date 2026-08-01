@@ -38,6 +38,15 @@ public class TrendlyneIpoService {
     @Value("${alert.threshold.trendlyne.qib}")
     private double qibAlertThreshold;
 
+    @Value("${alert.tier1.hni}")
+    private double tier1HniThreshold;
+
+    @Value("${alert.tier1.qib}")
+    private double tier1QibThreshold;
+
+    @Value("${alert.tier1.retail}")
+    private double tier1RetailThreshold;
+
     public TrendlyneIpoService(RestTemplateBuilder builder, TrendlyneIpoRepository repository,
                                AlertService alertService, AlertLogRepository alertLogRepository) {
         this.restTemplate = builder
@@ -89,10 +98,49 @@ public class TrendlyneIpoService {
 
                 if (Boolean.TRUE.equals(entity.getIsOpenNow())) {
                     checkAndAlert(entity);
+                    checkTier1HniAlert(entity);
                 }
             }
         }
         log.info("Saved {} Trendlyne IPO records across all categories", savedCount);
+    }
+
+    private void checkTier1HniAlert(TrendlyneIpo entity) {
+        if (entity.getHni() == null || entity.getQib() == null || entity.getRetail() == null) {
+            return;
+        }
+
+        boolean qualifies = entity.getHni() > tier1HniThreshold
+                && entity.getQib() > tier1QibThreshold
+                && entity.getRetail() > tier1RetailThreshold;
+
+        if (!qualifies) {
+            return;
+        }
+
+        // Separate prefix so this alert has its own independent dedup,
+        // separate from the regular QIB-only alert on the same IPO
+        String alertKey = "tl-tier1-" + entity.getSlug();
+
+        if (alertLogRepository.existsBySlug(alertKey)) {
+            return; // already alerted for this tier, don't spam
+        }
+
+        String board = Boolean.TRUE.equals(entity.getIsSme()) ? "SME" : "Mainboard";
+        String stockLine = entity.getCompanyName() + " (" + board + ")";
+
+        String message = String.format(
+                "%s%nTIER_1_HNI%nTIER_1_HNI%nTIER_1_HNI%n%nQIB: %.2fx%nHNI: %.2fx%nRetail: %.2fx%nBid Closes: %s%nMin Investment: ₹%.0f",
+                stockLine, entity.getQib(), entity.getHni(), entity.getRetail(),
+                entity.getBidEndDate(), entity.getApplicationAmountMin()
+        );
+
+        alertService.sendTelegram(message);
+
+        AlertLog logEntry = new AlertLog();
+        logEntry.setSlug(alertKey);
+        logEntry.setAlertedAt(LocalDateTime.now());
+        alertLogRepository.save(logEntry);
     }
 
     private void checkAndAlert(TrendlyneIpo entity) {
