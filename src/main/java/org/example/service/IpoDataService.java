@@ -2,7 +2,9 @@ package org.example.service;
 
 import org.example.dto.ChittorgarhResponse;
 import org.example.dto.IpoRecord;
+import org.example.entity.AlertLog;
 import org.example.entity.IpoSubscription;
+import org.example.repository.AlertLogRepository;
 import org.example.repository.IpoSubscriptionRepository;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
@@ -31,14 +33,24 @@ public class IpoDataService {
     private final RestTemplate restTemplate;
     private final IpoSubscriptionRepository repository;
 
+//    ---------NEW FIELDS
+    private final AlertService alertService;
+    private final AlertLogRepository alertLogRepository;
+
     @Value("${ipo.tracker.category:mainboard}")
     private String category;
 
-    public IpoDataService(RestTemplateBuilder builder, IpoSubscriptionRepository repository) {
+    @Value("${alert.threshold.total}")
+    private double alertThreshold;
+
+    public IpoDataService(RestTemplateBuilder builder, IpoSubscriptionRepository repository,
+                          AlertService alertService, AlertLogRepository alertLogRepository) {
         this.restTemplate = builder
                 .defaultHeader("User-Agent", "Mozilla/5.0 (compatible; PersonalIpoTracker/1.0)")
                 .build();
         this.repository = repository;
+        this.alertService = alertService;
+        this.alertLogRepository = alertLogRepository;
     }
 
     public void fetchAndSaveOpenIpos() {
@@ -65,11 +77,41 @@ public class IpoDataService {
             if (!isCurrentlyOpen(record, today)) {
                 continue; // skip closed/historic IPOs, we only want the live ones
             }
-            repository.save(mapToEntity(record));
+
+            IpoSubscription entity = mapToEntity(record);
+            repository.save(entity);
             savedCount++;
+
+            checkAndAlert(entity);
         }
         log.info("Saved {} open IPO subscription snapshots", savedCount);
     }
+    
+//    -----------Adding new method-------
+private void checkAndAlert(IpoSubscription entity) {
+    if (entity.getTotal() == null || entity.getTotal() < alertThreshold) {
+        return;
+    }
+    if (alertLogRepository.existsBySlug(entity.getSlug())) {
+        return; // already alerted for this IPO, don't spam
+    }
+
+    String subject = "IPO Alert: " + entity.getCompanyName() + " crossed " + alertThreshold + "x";
+    String body = String.format(
+            "%s subscription update:%nQIB: %.2fx%nRetail: %.2fx%nTotal: %.2fx%nAs on: %s",
+            entity.getCompanyName(), entity.getQib(), entity.getRetail(), entity.getTotal(), entity.getSubscriptionAsOn()
+    );
+
+    alertService.sendEmail(subject, body);
+    alertService.sendTelegram(subject + "\n" + body);
+
+    AlertLog logEntry = new AlertLog();
+    logEntry.setSlug(entity.getSlug());
+    logEntry.setAlertedAt(LocalDateTime.now());
+    alertLogRepository.save(logEntry);
+}
+    
+//    ----------NEW SECTION END----------
 
     private boolean isCurrentlyOpen(IpoRecord record, LocalDate today) {
         try {
