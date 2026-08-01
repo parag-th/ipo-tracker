@@ -4,8 +4,10 @@ import org.example.dto.ChittorgarhResponse;
 import org.example.dto.IpoRecord;
 import org.example.entity.AlertLog;
 import org.example.entity.IpoSubscription;
+import org.example.entity.TrendlyneIpo;
 import org.example.repository.AlertLogRepository;
 import org.example.repository.IpoSubscriptionRepository;
+import org.example.repository.TrendlyneIpoRepository;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,21 +38,24 @@ public class IpoDataService {
 //    ---------NEW FIELDS
     private final AlertService alertService;
     private final AlertLogRepository alertLogRepository;
+    private final TrendlyneIpoRepository trendlyneIpoRepository;
 
     @Value("${ipo.tracker.category:mainboard}")
     private String category;
 
-    @Value("${alert.threshold.qib}")
-    private double qibAlertThreshold;
+    @Value("${alert.threshold.total}")
+    private double alertThreshold;
 
     public IpoDataService(RestTemplateBuilder builder, IpoSubscriptionRepository repository,
-                          AlertService alertService, AlertLogRepository alertLogRepository) {
+                          AlertService alertService, AlertLogRepository alertLogRepository,
+                          TrendlyneIpoRepository trendlyneIpoRepository) {
         this.restTemplate = builder
                 .defaultHeader("User-Agent", "Mozilla/5.0 (compatible; PersonalIpoTracker/1.0)")
                 .build();
         this.repository = repository;
         this.alertService = alertService;
         this.alertLogRepository = alertLogRepository;
+        this.trendlyneIpoRepository = trendlyneIpoRepository;
     }
 
     public void fetchAndSaveOpenIpos() {
@@ -80,6 +85,7 @@ public class IpoDataService {
 
             IpoSubscription entity = mapToEntity(record);
             repository.save(entity);
+
             savedCount++;
 
             checkAndAlert(entity);
@@ -89,17 +95,28 @@ public class IpoDataService {
     
 //    -----------Adding new method-------
 private void checkAndAlert(IpoSubscription entity) {
-    if (entity.getQib() == null || entity.getQib() < qibAlertThreshold) {
+    if (entity.getTotal() == null || entity.getTotal() < alertThreshold) {
         return;
     }
     if (alertLogRepository.existsBySlug(entity.getSlug())) {
-        return; // already alerted for this IPO, don't spam
+        return;
     }
 
-    String subject = "IPO Alert: " + entity.getCompanyName() + " QIB crossed " + qibAlertThreshold + "x";
+    String minInvestment = "N/A";
+    if (entity.getIsin() != null && !entity.getIsin().isBlank()) {
+        Double amount = trendlyneIpoRepository.findFirstByIsinOrderByFetchedAtDesc(entity.getIsin())
+                .map(TrendlyneIpo::getApplicationAmountMin)
+                .orElse(null);
+        if (amount != null) {
+            minInvestment = String.format("₹%.0f", amount);
+        }
+    }
+
+    String subject = "IPO Alert: " + entity.getCompanyName() + " crossed " + alertThreshold + "x";
     String body = String.format(
-            "%s subscription update:%nQIB: %.2fx%nRetail: %.2fx%nTotal: %.2fx%nAs on: %s",
-            entity.getCompanyName(), entity.getQib(), entity.getRetail(), entity.getTotal(), entity.getSubscriptionAsOn()
+            "%s subscription update:%nQIB: %.2fx%nRetail: %.2fx%nTotal: %.2fx%nAs on: %s%nBid Closes: %s%nMin Investment: %s",
+            entity.getCompanyName(), entity.getQib(), entity.getRetail(), entity.getTotal(),
+            entity.getSubscriptionAsOn(), entity.getClosingDate(), minInvestment
     );
 
     alertService.sendTelegram(subject + "\n" + body);
@@ -129,6 +146,7 @@ private void checkAndAlert(IpoSubscription entity) {
         entity.setSlug(record.getSlug());
         entity.setOpeningDate(safeParseDate(record.getIssueOpenDate()));
         entity.setClosingDate(safeParseDate(record.getIssueCloseDate()));
+        entity.setIsin(record.getIsin());
         entity.setQib(record.getQib());
         entity.setsNii(record.getsNii());
         entity.setbNii(record.getbNii());

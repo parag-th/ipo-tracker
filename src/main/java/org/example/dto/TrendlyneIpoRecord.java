@@ -66,6 +66,9 @@ public class TrendlyneIpoRecord {
     @JsonProperty("isin")
     private String isin;
 
+    @JsonProperty("application_amount_min")
+    private Double applicationAmountMin;
+
     public String getCompanyName() { return companyName; }
     public void setCompanyName(String companyName) { this.companyName = companyName; }
 
@@ -125,4 +128,7 @@ public class TrendlyneIpoRecord {
 
     public String getIsin() { return isin; }
     public void setIsin(String isin) { this.isin = isin; }
+
+    public Double getApplicationAmountMin() { return applicationAmountMin; }
+    public void setApplicationAmountMin(Double applicationAmountMin) { this.applicationAmountMin = applicationAmountMin; }
 }

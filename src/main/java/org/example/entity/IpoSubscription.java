@@ -31,6 +31,7 @@ public class IpoSubscription {
     private String applications;
     private LocalDateTime subscriptionAsOn;
     private LocalDateTime fetchedAt;
+    private String isin;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -85,4 +86,7 @@ public class IpoSubscription {
 
     public LocalDateTime getFetchedAt() { return fetchedAt; }
     public void setFetchedAt(LocalDateTime fetchedAt) { this.fetchedAt = fetchedAt; }
+
+    public String getIsin() { return isin; }
+    public void setIsin(String isin) { this.isin = isin; }
 }

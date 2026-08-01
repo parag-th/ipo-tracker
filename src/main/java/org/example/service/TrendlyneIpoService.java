@@ -111,10 +111,10 @@ public class TrendlyneIpoService {
         String board = Boolean.TRUE.equals(entity.getIsSme()) ? "SME" : "Mainboard";
         String subject = "IPO Alert (Trendlyne): " + entity.getCompanyName() + " QIB crossed " + qibAlertThreshold + "x";
         String body = String.format(
-                "%s (%s) subscription update:%nQIB: %.2fx%nHNI: %.2fx%nRetail: %.2fx%nStrength/Risk: %s/%s%nExchange: %s%nBid Closes: %s",
+                "%s (%s) subscription update:%nQIB: %.2fx%nHNI: %.2fx%nRetail: %.2fx%nStrength/Risk: %s/%s%nExchange: %s%nBid Closes: %s%nMin Investment: ₹%.0f",
                 entity.getCompanyName(), board, entity.getQib(), entity.getHni(), entity.getRetail(),
                 entity.getStrengthCount(), entity.getRiskCount(), entity.getExchangeFlags(),
-                entity.getBidEndDate()
+                entity.getBidEndDate(), entity.getApplicationAmountMin()
         );
 
         alertService.sendTelegram(subject + "\n" + body);
@@ -147,7 +147,7 @@ public class TrendlyneIpoService {
         entity.setIsSme(record.getIsSme());
         entity.setExchangeFlags(record.getExchangeFlags());
         entity.setIssueSize(record.getIssueSize());
-        entity.setIsin(record.getIsin());
+        entity.setApplicationAmountMin(record.getApplicationAmountMin());
         entity.setFetchedAt(LocalDateTime.now());
         return entity;
     }

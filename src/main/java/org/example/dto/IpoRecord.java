@@ -64,6 +64,9 @@ public class IpoRecord {
     @JsonProperty("Subscription as on")
     private String subscriptionAsOn;
 
+    @JsonProperty("~isin")
+    private String isin;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -111,4 +114,7 @@ public class IpoRecord {
 
     public String getSubscriptionAsOn() { return subscriptionAsOn; }
     public void setSubscriptionAsOn(String subscriptionAsOn) { this.subscriptionAsOn = subscriptionAsOn; }
+
+    public String getIsin() { return isin; }
+    public void setIsin(String isin) { this.isin = isin; }
 }

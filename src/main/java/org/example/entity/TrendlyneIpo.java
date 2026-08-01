@@ -38,6 +38,8 @@ public class TrendlyneIpo {
     private Double issueSize;
     private String isin;
 
+    private Double applicationAmountMin;
+
     private LocalDateTime fetchedAt;
 
     public Long getId() { return id; }
@@ -108,4 +110,7 @@ public class TrendlyneIpo {
 
     public LocalDateTime getFetchedAt() { return fetchedAt; }
     public void setFetchedAt(LocalDateTime fetchedAt) { this.fetchedAt = fetchedAt; }
+
+    public Double getApplicationAmountMin() { return applicationAmountMin; }
+    public void setApplicationAmountMin(Double applicationAmountMin) { this.applicationAmountMin = applicationAmountMin; }
 }
