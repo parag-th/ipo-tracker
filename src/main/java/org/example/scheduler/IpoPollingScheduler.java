@@ -13,8 +13,8 @@ public class IpoPollingScheduler {
         this.ipoDataService = ipoDataService;
     }
 
-    @Scheduled(initialDelay = 0, fixedRate = 1_800_000) // runs immediately, then every 30 min
-    public void pollIpoSubscriptionData() {
-        ipoDataService.fetchAndSaveOpenIpos();
-    }
+////    @Scheduled(initialDelay = 0, fixedRate = 1_800_000) // runs immediately, then every 30 min
+//    public void pollIpoSubscriptionData() {
+//        ipoDataService.fetchAndSaveOpenIpos();
+//    }
 }

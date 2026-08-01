@@ -102,7 +102,7 @@ private void checkAndAlert(IpoSubscription entity) {
             entity.getCompanyName(), entity.getQib(), entity.getRetail(), entity.getTotal(), entity.getSubscriptionAsOn()
     );
 
-    alertService.sendEmail(subject, body);
+//    alertService.sendEmail(subject, body);
     alertService.sendTelegram(subject + "\n" + body);
 
     AlertLog logEntry = new AlertLog();
