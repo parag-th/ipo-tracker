@@ -103,13 +103,17 @@ private void checkAndAlert(IpoSubscription entity) {
     }
 
     String minInvestment = "N/A";
-    if (entity.getIsin() != null && !entity.getIsin().isBlank()) {
-        Double amount = trendlyneIpoRepository.findFirstByIsinOrderByFetchedAtDesc(entity.getIsin())
-                .map(TrendlyneIpo::getApplicationAmountMin)
-                .orElse(null);
-        if (amount != null) {
-            minInvestment = String.format("₹%.0f", amount);
-        }
+    String targetName = normalizeCompanyName(entity.getCompanyName());
+
+    Double amount = trendlyneIpoRepository.findTop100ByOrderByFetchedAtDesc().stream()
+            .filter(t -> normalizeCompanyName(t.getCompanyName()).equals(targetName))
+            .map(TrendlyneIpo::getApplicationAmountMin)
+            .filter(a -> a != null)
+            .findFirst()
+            .orElse(null);
+
+    if (amount != null) {
+        minInvestment = String.format("₹%.0f", amount);
     }
 
     String subject = "IPO Alert: " + entity.getCompanyName() + " crossed " + alertThreshold + "x";
@@ -188,5 +192,13 @@ private void checkAndAlert(IpoSubscription entity) {
         int fyStartYear = today.getMonthValue() >= 4 ? today.getYear() : today.getYear() - 1;
         String fy = String.format("%d-%02d", fyStartYear, (fyStartYear + 1) % 100);
         return String.format(BASE_URL, fyStartYear, fy, category);
+    }
+
+    private String normalizeCompanyName(String name) {
+        if (name == null) return "";
+        return name.toLowerCase()
+                .replaceAll("\\b(ltd|limited|ipo)\\b\\.?", "")
+                .replaceAll("[^a-z0-9]", "")
+                .trim();
     }
 }

@@ -22,7 +22,7 @@ public class TrendlyneController {
 
     @GetMapping("/live")
     public List<TrendlyneIpo> getLatest() {
-        return repository.findTop50ByOrderByFetchedAtDesc();
+        return repository.findTop100ByOrderByFetchedAtDesc();
     }
 
     @GetMapping("/preview-alerts")

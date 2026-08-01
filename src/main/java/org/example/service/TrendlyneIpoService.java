@@ -148,6 +148,7 @@ public class TrendlyneIpoService {
         entity.setExchangeFlags(record.getExchangeFlags());
         entity.setIssueSize(record.getIssueSize());
         entity.setApplicationAmountMin(record.getApplicationAmountMin());
+        entity.setIsin(record.getIsin());
         entity.setFetchedAt(LocalDateTime.now());
         return entity;
     }
