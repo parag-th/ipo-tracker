@@ -40,8 +40,8 @@ public class IpoDataService {
     @Value("${ipo.tracker.category:mainboard}")
     private String category;
 
-    @Value("${alert.threshold.total}")
-    private double alertThreshold;
+    @Value("${alert.threshold.qib}")
+    private double qibAlertThreshold;
 
     public IpoDataService(RestTemplateBuilder builder, IpoSubscriptionRepository repository,
                           AlertService alertService, AlertLogRepository alertLogRepository) {
@@ -89,20 +89,19 @@ public class IpoDataService {
     
 //    -----------Adding new method-------
 private void checkAndAlert(IpoSubscription entity) {
-    if (entity.getTotal() == null || entity.getTotal() < alertThreshold) {
+    if (entity.getQib() == null || entity.getQib() < qibAlertThreshold) {
         return;
     }
     if (alertLogRepository.existsBySlug(entity.getSlug())) {
         return; // already alerted for this IPO, don't spam
     }
 
-    String subject = "IPO Alert: " + entity.getCompanyName() + " crossed " + alertThreshold + "x";
+    String subject = "IPO Alert: " + entity.getCompanyName() + " QIB crossed " + qibAlertThreshold + "x";
     String body = String.format(
             "%s subscription update:%nQIB: %.2fx%nRetail: %.2fx%nTotal: %.2fx%nAs on: %s",
             entity.getCompanyName(), entity.getQib(), entity.getRetail(), entity.getTotal(), entity.getSubscriptionAsOn()
     );
 
-//    alertService.sendEmail(subject, body);
     alertService.sendTelegram(subject + "\n" + body);
 
     AlertLog logEntry = new AlertLog();
