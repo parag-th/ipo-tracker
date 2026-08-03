@@ -95,7 +95,7 @@ public class IpoDataService {
     
 //    -----------Adding new method-------
 private void checkAndAlert(IpoSubscription entity) {
-    if (entity.getTotal() == null || entity.getTotal() < alertThreshold) {
+    if (entity.getQib() == null || entity.getQib() < alertThreshold) {
         return;
     }
     if (alertLogRepository.existsBySlug(entity.getSlug())) {

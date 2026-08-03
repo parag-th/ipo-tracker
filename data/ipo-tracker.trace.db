@@ -1,0 +1,9 @@
+2026-08-03 11:55:42.879751+05:30 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "ALERT_LOGS" not found; SQL statement:
+delete from alert_logs [42102-224]
+2026-08-03 11:56:05.176683+05:30 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "ALERTS_LOG" not found; SQL statement:
+delete from alerts_log [42102-224]
+2026-08-03 11:56:38.211578+05:30 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "ALERT_LOGS" not found; SQL statement:
+delete from alert_logs [42102-224]
