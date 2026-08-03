@@ -7,3 +7,9 @@ delete from alerts_log [42102-224]
 2026-08-03 11:56:38.211578+05:30 jdbc[13]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "ALERT_LOGS" not found; SQL statement:
 delete from alert_logs [42102-224]
+2026-08-03 12:05:50.179196+05:30 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "ALTER_LOG" not found; SQL statement:
+delete from alter_log [42102-224]
+2026-08-03 12:05:53.517811+05:30 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "ALTERT_LOG" not found; SQL statement:
+delete from altert_log [42102-224]

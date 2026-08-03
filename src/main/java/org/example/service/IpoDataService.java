@@ -43,7 +43,7 @@ public class IpoDataService {
     @Value("${ipo.tracker.category:mainboard}")
     private String category;
 
-    @Value("${alert.threshold.total}")
+    @Value("${alert.threshold.qib}")
     private double alertThreshold;
 
     public IpoDataService(RestTemplateBuilder builder, IpoSubscriptionRepository repository,
