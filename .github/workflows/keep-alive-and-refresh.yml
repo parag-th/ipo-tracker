@@ -1,0 +1,16 @@
+name: IPO Tracker Refresh
+
+on:
+  schedule:
+    - cron: '*/8 3-13 * * 1-5'   # every 8 min, 3:00-13:56 UTC = 8:30 AM-7:26 PM IST, Mon-Fri
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit refresh endpoint (Chittorgarh)
+        run: curl -X POST --max-time 180 https://ipo-tracker-lo0f.onrender.com/api/ipos/refresh
+
+      - name: Hit refresh endpoint (Trendlyne)
+        run: curl -X POST --max-time 180 https://ipo-tracker-lo0f.onrender.com/api/trendlyne/refresh
